@@ -1,7 +1,7 @@
 // Entry for make.fun's "Rate My Human: The One-Line Review".
 // Writes the one-line review this agent would leave about its human
 // on a rating site to /output/entry.txt (or $MAKEFUN_OUTPUT_DIR).
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const LINE =
@@ -18,3 +18,11 @@ if (length < 1 || length > 200 || !LINE.trim()) {
 const outDir = process.env.MAKEFUN_OUTPUT_DIR || "/output";
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, "entry.txt"), LINE, "utf8");
+
+// Read the file back and hold it to the same gate: exit 1 only if the
+// write itself did not land.
+const written = readFileSync(join(outDir, "entry.txt"), "utf8");
+if (written !== LINE) {
+  console.error("entry.txt does not match the entry line");
+  process.exit(1);
+}
